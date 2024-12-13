@@ -124,7 +124,8 @@ class data_manager():
 	def parse_date(self):
 		self.data['Date'] = pd.to_datetime(self.data['Date'])
 		oldtime_table = self.data.copy()
-		oldtime_table['Date'] -= pd.Timedelta(100,'Y')
+		# oldtime_table['Date'] -= pd.Timedelta(100,'Y')
+		oldtime_table['Date'] -= pd.DateOffset(years=100)
 		self.data = self.data.where(self.data['Date'] < pd.to_datetime('2017/1/1'),oldtime_table)
 
 class gdc(data_manager):
@@ -142,7 +143,7 @@ class snp500(data_manager):
 
 	def get_code_list(self):
 		t = pd.read_csv('./data/SNP500/SNP500_Individuals/constituents.csv')
-		return t['Symbol'].as_matrix()
+		return t['Symbol'].to_numpy()
 
 
 class snp500_individual(data_manager):
@@ -184,7 +185,7 @@ class nikkei225(data_manager):
 
 	def get_code_list(self):
 		t = pd.read_csv("../data/Nikkei225/Nikkei225_Individuals/nikkei225-stock-prices.csv")
-		return t['SC'].as_matrix()
+		return t['SC'].to_numpy()
 
 class djia(data_manager):
 	def __init__(self):

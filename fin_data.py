@@ -4,8 +4,8 @@ import numpy as np
 from data import snp500,snp500_individual
 # s.prepare_pd()
 # table = s.get_pd_table()
-# size = table['Log Return'].as_matrix().size
-# k = table['Log Return'].as_matrix()
+# size = table['Log Return'].to_numpy().size
+# k = table['Log Return'].to_numpy()
 
 class data_generator():
         def __init__(self):
@@ -18,7 +18,7 @@ class data_generator():
                 s = snp500()
                 s.prepare_pd()
                 table = s.get_pd_table()
-                return table['Log Return'].as_matrix()
+                return table['Log Return'].to_numpy()
         def real_data(self,mode = "individuals"):
                 if mode == "individuals":
                         return self.individuals_data_random_picker()
@@ -32,8 +32,8 @@ class data_generator():
                         si = snp500_individual(random_code)
                         si.prepare_pd()
                         table = si.get_pd_table()
-                        sequence = table['Log Return'].as_matrix()
-                        size = table['Log Return'].as_matrix().size
+                        sequence = table['Log Return'].to_numpy()
+                        size = table['Log Return'].to_numpy().size
                         random_pos = np.random.randint(0,size-self.sequence_length)
                         data.append([sequence[random_pos:random_pos+self.sequence_length]])
                 data = np.array(data)
@@ -57,15 +57,15 @@ class data_generator():
                         si = snp500_individual(random_code)
                         si.prepare_pd()
                         table = si.get_pd_table()
-                        size = table['Log Return'].as_matrix().size
+                        size = table['Log Return'].to_numpy().size
                 return random_code
 
         def index_data_random_picker(self):
                 s = snp500()
                 s.prepare_pd()
                 table = s.get_pd_table()
-                sequence = table['Log Return'].as_matrix()
-                size = table['Log Return'].as_matrix().size
+                sequence = table['Log Return'].to_numpy()
+                size = table['Log Return'].to_numpy().size
                 data = []
                 for i in range(self.batch_size):
                         random_pos = np.random.randint(0,size-self.sequence_length)
