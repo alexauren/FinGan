@@ -23,7 +23,7 @@ parser.add_argument('--batches',type=int,default=1024)
 parser.add_argument('--folder_name',type=str,default='')
 parser.add_argument('--generator_lr',type=float,default='2e-4')
 parser.add_argument('--discriminator_lr',type=float,default='1e-5')
-parser.add_argument('--log_interval',type=int,default=50)
+parser.add_argument('--log_interval',type=int,default=1024)
 parser.add_argument('--seed',type=int,default=1)
 
 args = parser.parse_args()
@@ -76,20 +76,19 @@ def train():
     gan = Sequential([generator,discriminator])
     g_opt = Adam(learning_rate=args.generator_lr, beta_1=0.5)
     gan.compile(loss='binary_crossentropy', optimizer=g_opt)
-    
+    # raise Exception
     g_loss_recorder = []
     d_loss_recorder = []
     g_losses_recorder = []
     d_losses_recorder = []
     #start training
-    discriminator.compile(loss='binary_crossentropy', optimizer=d_opt)
     for epoch in range(args.epochs):
         for index in range(args.batches):
             noise = np.array([np.random.normal(0,1.0,size=100) for _ in range(batch_size)])
             real_series = dg.real_data()
             real_series = np.nan_to_num(real_series)
             generated_series = generator.predict(noise, verbose=0)
-            if index % args.log_interval == 0:
+            if index == args.log_interval - 1 and epoch == args.epochs - 1:
                 sf.acf(generated_series,'./imgs/%s/acf/acf_abs_%i_%i'%(timestamp,epoch,index),for_abs=True)
                 sf.acf(generated_series,'./imgs/%s/acf/acf_raw_%i_%i'%(timestamp,epoch,index),for_abs=False)
                 sf.acf(generated_series,'./imgs/%s/acf/acf_abs_linear_%i_%i'%(timestamp,epoch,index),for_abs=True,scale='linear')
@@ -102,12 +101,27 @@ def train():
             # update discriminator
             X = np.concatenate((real_series, generated_series))
             y = np.concatenate([np.random.uniform(0.9,1.1,batch_size),np.random.uniform(0.1,0.3,batch_size)])
+            # unfreeze discriminator when training discriminator
+            discriminator.trainable = True
+            for e in discriminator.layers:
+                e.trainable = True
+            discriminator.compile(loss='binary_crossentropy', optimizer=d_opt)
             d_loss = discriminator.train_on_batch(X, y)
             d_loss_recorder.append(d_loss)
+
             # update generatorx
             y = np.array([1.]*batch_size,dtype=np.float32)
+            # freeze discriminator when training generator
+            discriminator.trainable = False
+            for e in discriminator.layers:
+                e.trainable = False
+            discriminator.compile(loss='binary_crossentropy', optimizer=d_opt)
+
+            gan = Sequential([generator, discriminator])
+            gan.compile(loss='binary_crossentropy', optimizer=g_opt)
             g_loss = gan.train_on_batch(noise, y)
             g_loss_recorder.append(g_loss)
             print("epoch: %d, batch: %d, g_loss: %f, d_loss: %f" % (epoch, index, g_loss, d_loss))
-            generator.save_weights('./weights/%s/generator_%i_%i.weights.h5'%(timestamp,epoch,index))
+            if index == args.log_interval - 1 and epoch == args.epochs - 1:
+                generator.save_weights('./weights/%s/generator_%i_%i.weights.h5'%(timestamp,epoch,index))
 train()
