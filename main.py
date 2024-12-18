@@ -17,7 +17,7 @@ from shutil import copyfile
 import argparse 
 parser = argparse.ArgumentParser(description='FIN-GAN implementation')
 parser.add_argument('--batch_size',type=int,default=24)
-parser.add_argument('--generator_model',type=str,default='mlp-cnn')
+parser.add_argument('--generator_model',type=str,default='plus')
 parser.add_argument('--epochs',type=int,default=10)
 parser.add_argument('--batches',type=int,default=1024)
 parser.add_argument('--folder_name',type=str,default='')
@@ -64,8 +64,8 @@ def train():
         sys.exit()
     #preparing discriminator
                                                       
-    statistics_opt = Adam(learning_rate=0.0001)
-    generator_statistics.compile(loss='mean_squared_error',optimizer=statistics_opt)
+    # statistics_opt = Adam(learning_rate=0.0001)
+    # generator_statistics.compile(loss='mean_squared_error',optimizer=statistics_opt)
 
     discriminator = discriminator_model()
     d_opt = Adam(learning_rate=args.discriminator_lr, beta_1=0.1)
@@ -88,7 +88,7 @@ def train():
             real_series = dg.real_data()
             real_series = np.nan_to_num(real_series)
             generated_series = generator.predict(noise, verbose=0)
-            if index == args.log_interval - 1 and epoch == args.epochs - 1:
+            if index == args.log_interval - 1:
                 sf.acf(generated_series,'./imgs/%s/acf/acf_abs_%i_%i'%(timestamp,epoch,index),for_abs=True)
                 sf.acf(generated_series,'./imgs/%s/acf/acf_raw_%i_%i'%(timestamp,epoch,index),for_abs=False)
                 sf.acf(generated_series,'./imgs/%s/acf/acf_abs_linear_%i_%i'%(timestamp,epoch,index),for_abs=True,scale='linear')
@@ -122,6 +122,6 @@ def train():
             g_loss = gan.train_on_batch(noise, y)
             g_loss_recorder.append(g_loss)
             print("epoch: %d, batch: %d, g_loss: %f, d_loss: %f" % (epoch, index, g_loss, d_loss))
-            if index == args.log_interval - 1 and epoch == args.epochs - 1:
+            if index == args.log_interval - 1:
                 generator.save_weights('./weights/%s/generator_%i_%i.weights.h5'%(timestamp,epoch,index))
 train()
