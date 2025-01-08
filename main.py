@@ -124,4 +124,17 @@ def train():
             print("epoch: %d, batch: %d, g_loss: %f, d_loss: %f" % (epoch, index, g_loss, d_loss))
             if index == args.log_interval - 1:
                 generator.save_weights('./weights/%s/generator_%i_%i.weights.h5'%(timestamp,epoch,index))
+                discriminator.save_weights('./weights/%s/discriminator%i_%i.weights.h5'%(timestamp,epoch,index))
 train()
+
+# import pandas as pd
+# data = np.load('npy/20250103_184855_/generated_time_series_4_1023.npy')
+# df = pd.DataFrame()
+# for i in range(24):
+#     for j in range(6):
+#         start = j * 1060
+#         end = (j + 1) * 1060
+#         df_index = i * 6 + j
+#     df[df_index] = data[i][start:end].flatten()
+
+# df.to_csv('generated_data/1.csv')
